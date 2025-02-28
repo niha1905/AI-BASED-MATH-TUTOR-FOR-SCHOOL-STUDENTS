@@ -37,7 +37,7 @@ import google.generativeai as genai
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*")
 
-genai.configure(api_key="AIzaSyAlFBwhAiOMljqjuOiObMc1CER6N2LUSXU")
+genai.configure(api_key="Gemini api key")
 socketio = SocketIO(app, cors_allowed_origins="*")
 x, y = sp.symbols('x y')
 
