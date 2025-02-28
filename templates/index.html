@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Math Tutor</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f8ff;
+            text-align: center;
+            color: #004085;
+        }
+        h1 {
+            color: #003366;
+            font-size: 24px;
+        }
+        #container {
+            max-width: 600px;
+            margin: auto;
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 255, 0.2);
+        }
+        input, button {
+            padding: 10px;
+            margin: 10px;
+            width: 80%;
+            border: 1px solid #004085;
+            border-radius: 5px;
+        }
+        button {
+            background: #004085;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #002a5e;
+        }
+        #error-message {
+            color: red;
+            font-weight: bold;
+        }
+        #animation-container video {
+            width: 100%;
+            border-radius: 5px;
+        }
+        .loading {
+            font-size: 18px;
+            color: #004085;
+            font-weight: bold;
+        }
+        pre {
+            background: #e6f2ff;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: left;
+            overflow-x: auto;
+            font-family: 'Courier New', Courier, monospace;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <h1><i class="fas fa-calculator"></i> AI Math Tutor</h1>
+        <input type="text" id="equation-input" placeholder="Enter equation (e.g., x^2 + 2x + 1)">
+        <button onclick="processEquation()">Submit</button>
+
+        <div id="error-message"></div>
+        <div id="animation-container"></div>
+        <h3>Step-by-Step Explanation</h3>
+        <pre id="explanation-container"></pre>
+    </div>
+
+    <script>
+        const socket = io("http://localhost:5000");
+
+function processEquation() {
+    const equation = document.getElementById("equation-input").value.trim();
+    document.getElementById("error-message").textContent = "";
+    document.getElementById("animation-container").innerHTML = '<p class="loading">Processing equation...</p>';
+    document.getElementById("explanation-container").innerHTML = "";
+
+    socket.emit("process_equation", { equation });
+}
+
+socket.on("equation_processed", (data) => {
+    // Display Manim animation
+    document.getElementById("animation-container").innerHTML = `
+        <video controls>
+            <source src="${data.animation}" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    `;
+
+    // Format the AI-generated step-by-step explanation
+    let formattedExplanation = data.explanation
+        .replace(/\n/g, "<br>")  // Preserve line breaks
+        .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")  // Bold text if AI uses markdown
+        .replace(/\*(.*?)\*/g, "<em>$1</em>");  // Italic text if AI uses markdown
+
+    document.getElementById("explanation-container").innerHTML = formattedExplanation;
+    document.getElementById("error-message").textContent = "";
+});
+
+socket.on("equation_error", (data) => {
+    document.getElementById("error-message").textContent = data.error;
+    document.getElementById("animation-container").innerHTML = "";
+    document.getElementById("explanation-container").textContent = "";
+});
+
+
+       
+
+        socket.on("equation_processed", (data) => {
+    document.getElementById("animation-container").innerHTML = `
+        <video controls>
+            <source src="${data.animation}" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    `;
+    document.getElementById("explanation-container").innerHTML = data.explanation; // Use innerHTML instead of textContent
+    document.getElementById("error-message").textContent = "";
+});
+
+    </script>
+</body>
+</html>
